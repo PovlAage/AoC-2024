@@ -6,7 +6,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Program.fs"/>
+        <Content Include="Input\input01.txt" />
+        <None Include="Day01.fsx" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FsUnit.xUnit" Version="6.0.1" />
     </ItemGroup>
 
 </Project>
