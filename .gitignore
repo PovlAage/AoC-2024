@@ -1,0 +1,42 @@
+### JetBrains Rider ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+# Rider-specific cache
+.idea_modules/
+
+### .NET and Visual Studio ###
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Logs
+*.log
+
+# Build directories
+bin/
+obj/
+Debug/
+Release/
+
+# Rider workspace and run configurations
+.idea/
+
+# Dependency cache
+*.cache/
+*.ide/
+
+# Others
+.vs/
+*.dbmdl
+*.vscode/
+*.pdb
+*.pidb
+*.svclog
+*.sln.cache
+*.config/
