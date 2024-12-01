@@ -40,3 +40,5 @@ Release/
 *.svclog
 *.sln.cache
 *.config/
+# do not publicize actual input files
+/AdventOfCode2024/Input/

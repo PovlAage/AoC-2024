@@ -4,17 +4,12 @@
 
 open Utility
 open System
-open System.IO
 open FsUnit.Xunit
 
 type Input = int list * int list
 
 let parse (inputText:string) =
-    let splitLine2 (line:string) =
-        match line.Split(' ', StringSplitOptions.TrimEntries ||| StringSplitOptions.RemoveEmptyEntries) with
-            | [| e1; e2 |] -> (e1, e2)
-            | _ -> failwith $"fail: {line}"
-    inputText |> getLines |> List.map splitLine2 |> List.map (fun (s1, s2) -> (Int32.Parse s1, Int32.Parse s2)) |> List.unzip
+    inputText |> getLines |> List.map split2space |> List.map (fun (s1, s2) -> (int s1, int s2)) |> List.unzip
 
 let calc1 (input:Input) =
     let l1, l2 = input
@@ -24,11 +19,9 @@ let calc2 (input:Input) =
     let l1, l2 = input
     let countMap = List.countBy id l2 |> Map.ofList
     let similarityScore n =
-        let count =
-            match countMap |> Map.tryFind n with
-            | Some c -> c
-            | None -> 0
-        n * count
+        match Map.tryFind n countMap with
+        | Some c -> n * c
+        | None -> 0
     l1 |> List.sumBy similarityScore
 
 let test =
