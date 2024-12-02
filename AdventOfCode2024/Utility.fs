@@ -4,7 +4,7 @@ open System
 open System.IO
 
 let readDailyInput day =
-    let path = Path.Combine("AdventOfCode2024", "Input", $"input{day:D2}.txt")
+    let path = Path.Combine("AdventOfCode2024", "Input", $"input{day:D2}")
     File.ReadAllText(path)
 
 let getLines (inputText:string) =
@@ -16,3 +16,6 @@ let split2 (c:char) (s:string) =
     | _ -> failwithf $"Could not split {s} into two"
 
 let split2space = split2 ' '
+
+let splitSpace (s:string) =
+    s.Split (' ', StringSplitOptions.TrimEntries ||| StringSplitOptions.RemoveEmptyEntries) |> List.ofArray
