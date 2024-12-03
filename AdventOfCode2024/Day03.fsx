@@ -6,26 +6,39 @@ open System.Text.RegularExpressions
 open Utility
 open FsUnit.Xunit
 
-type Report = int list
-type Input = Report list
-type Mul = Mul of int * int
+type Token =
+    | Mul of int * int
+    | Do
+    | Dont
 
 let parse (inputText:string) =
-    let re = Regex("""mul\((\d{1,3}),(\d{1,3})\)""")
-    [for m in re.Matches(inputText) do Mul (int m.Groups[1].Value, int m.Groups[2].Value)]
+    let re = Regex(@"(?<dont>don't\(\))|(?<do>do\(\))|(?<mul>mul\((\d{1,3}),(\d{1,3})\))")
+    [
+        for m in re.Matches(inputText) do
+            if m.Groups["mul"].Success then
+                Mul (int m.Groups[1].Value, int m.Groups[2].Value)
+            elif m.Groups["do"].Success then
+                Do
+            elif m.Groups["dont"].Success then
+                Dont
+            else
+                failwithf $"Unexpected match {m.Value} @ {m.Index}"
+    ]
 
-let replace (inputText:string) =
-    let re = Regex(@"don't\(\).*?(do\(\)|$)", RegexOptions.Singleline)
-    let replaced = re.Replace(inputText, "")
-    if replaced.Contains("don't") then
-        let index = replaced.IndexOf("don't")
-        printfn $"{replaced.Substring(index, 100)}"
-        failwithf $"""don't at {index}""" 
-    replaced
+let eval1 = function
+    | Mul (a, b) -> a*b
+    | Do -> 0
+    | Dont -> 0
 
-let calc1 = parse >> List.sumBy (fun (Mul (a, b)) -> a * b)
+let calc1 = parse >> List.sumBy eval1
 
-let calc2 = replace >> calc1
+let folder2 (state, acc) t =
+    match t with
+    | Do -> (1, acc)
+    | Dont -> (0, acc)
+    | Mul(a, b) -> (state, acc + state * a * b)
+    
+let calc2 = parse >> List.fold folder2 (1, 0) >> snd
 
 let test =
     let day = 3
