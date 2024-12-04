@@ -15,18 +15,14 @@ let parse (inputText:string) =
     let re = Regex(@"(?<dont>don't\(\))|(?<do>do\(\))|(?<mul>mul\((\d{1,3}),(\d{1,3})\))")
     [
         for m in re.Matches(inputText) do
-            if m.Groups["mul"].Success then
-                Mul (int m.Groups[1].Value, int m.Groups[2].Value)
-            elif m.Groups["do"].Success then
-                Do
-            elif m.Groups["dont"].Success then
-                Dont
-            else
-                failwithf $"Unexpected match {m.Value} @ {m.Index}"
+            if m.Groups["mul"].Success then Mul (int m.Groups[1].Value, int m.Groups[2].Value)
+            elif m.Groups["do"].Success then Do
+            elif m.Groups["dont"].Success then Dont
+            else failwithf $"Unexpected match {m.Value} @ {m.Index}"
     ]
 
 let eval1 = function
-    | Mul (a, b) -> a*b
+    | Mul (a, b) -> a * b
     | Do -> 0
     | Dont -> 0
 
@@ -37,7 +33,7 @@ let folder2 (state, acc) t =
     | Do -> (1, acc)
     | Dont -> (0, acc)
     | Mul(a, b) -> (state, acc + state * a * b)
-    
+
 let calc2 = parse >> List.fold folder2 (1, 0) >> snd
 
 let test =

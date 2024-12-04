@@ -9,7 +9,7 @@ open FsUnit.Xunit
 type Input = int list * int list
 
 let parse (inputText:string) =
-    inputText |> getLines |> List.map split2space |> List.map (fun (s1, s2) -> (int s1, int s2)) |> List.unzip
+    inputText |> parseLines |> List.map split2space |> List.map (fun (s1, s2) -> (int s1, int s2)) |> List.unzip
 
 let calc1 (input:Input) =
     let l1, l2 = input

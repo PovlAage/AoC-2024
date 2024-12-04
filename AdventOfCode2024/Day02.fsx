@@ -10,7 +10,7 @@ type Report = int list
 type Input = Report list
 
 let parse (inputText:string) =
-    inputText |> getLines |> List.map (splitSpace >> List.map int)
+    inputText |> parseLines |> List.map (splitSpace >> List.map int)
 
 let isGraduallyIncreasing  levels =
     levels |> List.pairwise |> List.forall (fun (l1, l2) -> 1 <= (l2 - l1) && (l2 - l1) <= 3)
