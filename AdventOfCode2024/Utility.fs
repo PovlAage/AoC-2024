@@ -22,6 +22,16 @@ let parseArray2D inputText padding =
         Array2D.blit arr 0 0 arr2 padding padding xdim ydim
         arr2
 
+let parseBlocks (input:string) =
+    let blocks = input.Split("\n\n") |> List.ofArray
+    blocks |> List.map parseLines
+
+let parseBlocks2 input =
+    let blocks = parseBlocks input
+    match blocks with
+    | [b1;b2] -> b1, b2
+    | _ -> printfn $"%A{blocks}" ; failwith $"Bad number of blocks: {blocks.Length}"
+
 let split2 (c:char) (s:string) =
     match s.Split(c, StringSplitOptions.TrimEntries ||| StringSplitOptions.RemoveEmptyEntries) with
     | [| x ; y |] -> x, y
