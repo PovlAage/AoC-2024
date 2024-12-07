@@ -3,23 +3,20 @@
 #load "Utility.fs"
 #load "AdventArray.fs"
 
+open System.Diagnostics
 open AdventArray
 open Utility
 open FsUnit.Xunit
 
-let encodeDirections = [1;2;4;8]
-let walk arr =
+let countVisited arr =
     let pos = find '^' arr
-    set (char encodeDirections[0]) pos arr
+    set 'X' pos arr
     let rec loop pos dirIndex =
         let nextPos = add pos directions4[dirIndex % 4]
-        let encoded = encodeDirections[dirIndex % 4]
         match arr |> AdventArray.item nextPos with
-        | '.' -> set (char encoded) nextPos arr ; loop nextPos dirIndex
-        | c when char 0 <= c && c <= char 15 && (int encoded &&& int c <> 0) -> -1  // loop 
-        | c when char 0 <= c && c <= char 15 -> set (char (int c ||| encoded)) nextPos arr ; loop nextPos dirIndex
+        | '.' | 'X' -> set 'X' nextPos arr ; loop nextPos dirIndex
         | '#' -> loop pos (dirIndex + 1)
-        | ' ' -> arr |> Seq.cast<char> |> Seq.filter (fun cc -> char 0 <= cc && cc <= char 15) |> Seq.length
+        | ' ' -> arr |> Seq.cast<char> |> Seq.filter (fun cc -> cc = 'X') |> Seq.length
         | c -> failwithf $"Unexpected '{c}'"
     let dirIndex = 0
     assert (directions4[dirIndex] = (0, -1))
@@ -27,20 +24,38 @@ let walk arr =
 
 let calc1 input =
     let arr = parseArray2D input 1 ' '
-    walk arr
+    countVisited arr
+
+let isLoop arr pos extraObstacle =
+    match arr |> item extraObstacle with
+    | '^' -> false // illegal
+    | '#' -> false // already know that this is not a loop
+    | '.' -> 
+        set '#' extraObstacle arr
+        let rec loop pos dirIndex (visited:Set<int*int>) =
+            let nextPos = add pos directions4[dirIndex]
+            match (arr |> AdventArray.item nextPos, dirIndex) with
+            | '.', _ -> loop nextPos dirIndex visited
+            | '#', 0 when Set.contains pos visited -> true
+            | '#', 0 -> loop pos ((dirIndex + 1) % 4) (Set.add pos visited)
+            | '#', _ -> loop pos ((dirIndex + 1) % 4) visited
+            | ' ', _ -> false
+            | c -> failwithf $"Unexpected '{c}'"
+        let dirIndex = 0
+        assert (directions4[dirIndex] = (0, -1))
+        let res = loop pos dirIndex Set.empty
+        set '.' extraObstacle arr
+        res
+    | c -> failwithf $"unexpected {c}"
 
 let calc2 input =
-    let arrClean = parseArray2D input 1 ' '
-    let arr = Array2D.copy arrClean
-    let isLoop x y =
-        Array2D.blit arrClean 0 0 arr 0 0 (Array2D.length1 arr) (Array2D.length2 arr)
-        match arr[x,y] with
-        | '^' | ' ' -> false
-        | _ -> arr[x,y] <- '#' ; (walk arr) = -1
+    let arr = parseArray2D input 1 ' '
+    let pos = arr |> find '^'
+    arr[fst pos, snd pos] <- '.'
+    [for x in [1..Array2D.length1 arr - 2] do for y in [1..Array2D.length2 arr - 2] do isLoop arr pos (x, y)] |> List.filter id |> List.length
 
-    [for x in [1..Array2D.length1 arrClean - 2] do for y in [1..Array2D.length2 arrClean - 2] do isLoop x y] |> List.filter id |> List.length
-
-let test =    
+let test =
+    let sw = Stopwatch.StartNew()
     let day = 6
     let test1 = """
 ....#.....
@@ -61,7 +76,7 @@ let test =
 
     calc2 test1 |> should equal 6
     calc2 input |> should equal 2165
-    printfn $"Day {day} done"
+    printfn $"Day {day} done: {sw.ElapsedMilliseconds}ms"
     
 test
 printfn $"Done"
