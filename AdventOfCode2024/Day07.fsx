@@ -8,7 +8,7 @@ open AdventArray
 open Utility
 open FsUnit.Xunit
 
-type Operator = Add | Multiply | Concatenation
+type Operator = Add | Multiply | Concat
 type Line = int64 * int64 list 
 
 let parse input =
@@ -18,45 +18,42 @@ let parse input =
         int64 expected, values |> List.map int64
     input |> parseLines |> List.map parseLine
 
-let eval (a:int64) (b:int64) op =
-    let res = match op with
-                | Add -> a + b
-                | Multiply -> a * b
-                | Concatenation -> int64 (string a + string b)
-    // printfn $"{op} {a} {b} = {res}";
-    res
+let eval (a:int64) (b:int64) = function 
+    | Add -> a + b
+    | Multiply -> a * b
+    | Concat -> int64 (string a + string b)
 
 [<TailCall>]
-let rec isValidImpl (ops:Operator list) (expected:int64) (values:int64 list) i acc =
+let rec isValidLoop (ops:Operator list) (expected:int64) (values:int64 list) i acc =
     if acc > expected then
-        0L
+        false
     elif i = values.Length then
         if acc = expected then
-            expected
+            true
         else
-            0L
+            false
     else
-        ops |> List.map (fun op -> isValidImpl ops expected values (i + 1) (eval acc values[i] op)) |> List.max
+        ops |> Seq.exists (fun op -> isValidLoop ops expected values (i + 1) (eval acc values[i] op))
 
-let isValid ops ((expected, values):Line) = isValidImpl ops expected values 1 (List.head values)
+let isValid ops ((expected, values):Line) = isValidLoop ops expected values 1 (List.head values)
 
 let calc1 input =
     let input = parse input
-    input |> List.sumBy (isValid [Add; Multiply])
+    input |> List.filter (isValid [Add; Multiply]) |> List.sumBy fst
 
 let calc2 input =
     let input = parse input
-    input |> List.sumBy (isValid [Add; Multiply; Concatenation])
+    input |> List.filter (isValid [Add; Multiply; Concat]) |> List.sumBy fst
 
 let test =
     let sw = Stopwatch.StartNew()
     let day = 7
     
-    isValid [Add] (5L, [2L; 3L]) |> should equal 5L
-    isValid [Add] (6L, [2L; 3L]) |> should equal 0L
-    isValid [Multiply] (5L, [2L; 3L]) |> should equal 0L
+    isValid [Add] (5L, [2L; 3L]) |> should equal true
+    isValid [Add] (6L, [2L; 3L]) |> should equal false
+    isValid [Multiply] (5L, [2L; 3L]) |> should equal false
 
-    isValid [Add;Multiply] (172L, [9;8;1;26;4;73] |> List.map int64) |> should equal 0L
+    isValid [Add;Multiply] (172L, [9;8;1;26;4;73] |> List.map int64) |> should equal false
     let test1 = """
 190: 10 19
 3267: 81 40 27
