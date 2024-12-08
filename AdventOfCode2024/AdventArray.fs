@@ -17,7 +17,12 @@ let parseArray2D inputText padding padChar =
 let directions8 = [ for dx in -1..1 do for dy in -1..1 do (dx, dy) ] |> List.except [(0, 0)]
 let directions4 = [ (0,-1) ; (1,0) ; (0,1) ; (-1,0) ]
 
-let add (x, y) (dx, dy) = (x + dx, y + dy)
+let addvec (x, y) (dx, dy) = (x + dx, y + dy)
+
+let vec p1 p2 =
+    let x1, y1 = p1
+    let x2, y2 = p2
+    (x2 - x1, y2 - y1)
 
 let item pos (arr:char array2d) = arr[fst pos, snd pos]
 

@@ -12,7 +12,7 @@ let countVisited arr =
     let pos = find '^' arr
     set 'X' pos arr
     let rec loop pos dirIndex =
-        let nextPos = add pos directions4[dirIndex % 4]
+        let nextPos = addvec pos directions4[dirIndex % 4]
         match arr |> AdventArray.item nextPos with
         | '.' | 'X' -> set 'X' nextPos arr ; loop nextPos dirIndex
         | '#' -> loop pos (dirIndex + 1)
@@ -33,7 +33,7 @@ let isLoop arr pos extraObstacle =
     | '.' -> 
         set '#' extraObstacle arr
         let rec loop pos dirIndex (visited:Set<int*int>) =
-            let nextPos = add pos directions4[dirIndex]
+            let nextPos = addvec pos directions4[dirIndex]
             match (arr |> AdventArray.item nextPos, dirIndex) with
             | '.', _ -> loop nextPos dirIndex visited
             | '#', 0 when Set.contains pos visited -> true

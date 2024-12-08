@@ -28,10 +28,7 @@ let rec isValidLoop (ops:Operator list) (expected:int64) (values:int64 list) i a
     if acc > expected then
         false
     elif i = values.Length then
-        if acc = expected then
-            true
-        else
-            false
+        acc = expected
     else
         ops |> Seq.exists (fun op -> isValidLoop ops expected values (i + 1) (eval acc values[i] op))
 
