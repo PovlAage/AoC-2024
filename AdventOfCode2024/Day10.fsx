@@ -53,7 +53,7 @@ let rec rating topomap trailHead =
         1
     else
         ns |> List.sumBy (rating topomap)
-        
+
 let calc1 input =
     let topomap, trailheads = input |> parse
     trailheads |> List.sumBy (score topomap)
