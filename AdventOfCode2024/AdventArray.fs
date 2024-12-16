@@ -47,4 +47,9 @@ let find char arr =
     arr |> Array2D.iteri (fun i j c -> if c = char then pos <- (i, j))
     if pos = (-1, -1) then failwithf "Not found" else pos
 
+let findAndClear char arr clearChar =
+    let pos = find char arr
+    arr[fst pos, snd pos] <- clearChar
+    pos
+
 let count char (arr:char array2d)= arr |> Seq.cast<char> |> Seq.filter (fun cc -> cc = 'X') |> Seq.length 
