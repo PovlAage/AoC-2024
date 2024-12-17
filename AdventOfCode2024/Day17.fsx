@@ -33,15 +33,15 @@ let parse input =
     let r (line:string) = int (line.Split(':')[1]) 
     let a, b, c = r stateBlock[0], r stateBlock[1], r stateBlock[2]
     let program = (programBlock[0].Split(':')[1]).Split(',') |> Array.toList |> List.map int
-    let state = { IP=0; Registers = Map.ofList [(RegisterId.A, a); (RegisterId.B, b); (RegisterId.C, c)]; Output = [] }
+    let state = { IP=0; Registers = Map [(RegisterId.A, a); (RegisterId.B, b); (RegisterId.C, c)]; Output = [] }
     state, program
 
 let getComboValue opCode (state:State) =
     match opCode with
     | 0 | 1 | 2 | 3 -> int64 opCode
-    | 4 -> state.Registers.Item RegisterId.A
-    | 5 -> state.Registers.Item RegisterId.B
-    | 6 -> state.Registers.Item RegisterId.C
+    | 4 -> state.Registers[RegisterId.A]
+    | 5 -> state.Registers[RegisterId.B]
+    | 6 -> state.Registers[RegisterId.C]
     | _ -> failwith $"Invalid combo operand {opCode}"
 
 let interpretStep (program:int list) (state:State) =
@@ -80,10 +80,11 @@ let interpretStep (program:int list) (state:State) =
     | _ -> failwith $"Invalid opcode {opcode}"
         
 let run (state:State) (program:int list) =
-    let mutable state = state
-    while 0 <= state.IP && state.IP < program.Length do
-        state <- interpretStep program state
-    state
+    let halt s = not (0 <= s.IP && s.IP < program.Length)
+    let rec loop s =
+        let s = interpretStep program s
+        if halt s then s else loop s
+    loop state
 
 let calc1 (state, program)=
     let endState = run state program
@@ -96,16 +97,15 @@ let calcOutput a =
     assert (a < outputBits)
     let b = (a % 8) ^^^ 3 // 3 bits
     let c = a >>> b // a-b bits
-    let b = b ^^^ c // 3 bits
-    let b = b ^^^ 5
+    let b = b ^^^ c ^^^ 5 // 3 bits
     b % 8
-let outputcache = Array.init outputBits calcOutput
+let outputTable = Array.init outputBits calcOutput
 
 let calc2 (program:int list) =
     let rec loop candidates k =
-        let isCorrectOutput x = outputcache[int (x % outputBits64)] = program[k]
+        let isCorrectOutputDigit x = outputTable[int (x % outputBits64)] = program[k]
         let getNextCandidates c = [0..7] |> List.map (fun b3 -> (c <<< 3) + int64 b3)
-        let candidates = candidates |> List.collect getNextCandidates |> List.filter isCorrectOutput
+        let candidates = candidates |> List.collect getNextCandidates |> List.filter isCorrectOutputDigit
         if k = 0 then
             candidates[0]
         else
@@ -116,13 +116,13 @@ let test =
     let sw = Stopwatch.StartNew()
     let day = 17
 
-    let testCase r v = { IP = 0; Output = []; Registers = Map.ofList [(r, v)] }
+    let testCase r v = { IP = 0; Output = []; Registers = Map [(r, v)] }
     (interpretStep [2;6] (testCase RegisterId.C 9L)).Registers[RegisterId.B] |> should equal 1L
     (run (testCase RegisterId.A 10L) [5;0;5;1;5;4]).Output |> List.rev |> should equal [0;1;2]
     (run (testCase RegisterId.A 2024L) [0;1;5;4;3;0]).Output |> List.rev |> should equal [4;2;5;6;7;7;7;7;3;1;0]
     (run (testCase RegisterId.A 2024L) [0;1;5;4;3;0]).Registers[RegisterId.A] |> should equal 0L
     (interpretStep [1;7] (testCase RegisterId.B 29L)).Registers[RegisterId.B] |> should equal 26L
-    (interpretStep [4;0] {IP=0; Output=[]; Registers=Map.ofList [(RegisterId.B, 2024L); (RegisterId.C, 43690L)]}).Registers[RegisterId.B] |> should equal 44354L
+    (interpretStep [4;0] {IP=0; Output=[]; Registers=Map [(RegisterId.B, 2024L); (RegisterId.C, 43690L)]}).Registers[RegisterId.B] |> should equal 44354L
 
     let test0 = """
 Register A: 729
