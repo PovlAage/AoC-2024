@@ -55,16 +55,6 @@ let parse input =
     let graph = [for x in 0..maxx do for y in 0..maxy do if arr[x, y] = '.' then yield Point(x, y)] |> List.collect getPositions |> Map.ofList
     graph, Position (Point startTile, Direction.East), Point endTile
 
-let dumpArray enable arr p i m=
-    if enable then
-        let maxx, maxy = AdventArray.maxes arr 0
-        for y in [0..maxy] do
-            for x in [0..maxx] do
-                let c = if (Point (x, y) = p) then m else arr[x, y]
-                printf $"{c}"
-            printf "\n"
-        printfn $"{i}:{m}"
-        
 let calc part2 input=
     let (graph:Graph), (startPos:Position), (endTile:Point) = input
     

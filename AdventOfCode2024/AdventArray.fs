@@ -53,3 +53,11 @@ let findAndClear char arr clearChar =
     pos
 
 let count char (arr:char array2d)= arr |> Seq.cast<char> |> Seq.filter (fun cc -> cc = 'X') |> Seq.length 
+
+let dumpArray enable arr=
+    if enable then
+        let maxx, maxy = maxes arr 0
+        for y in [0..maxy] do
+            for x in [0..maxx] do
+                printf $"{arr[x, y]}"
+            printf "\n"
