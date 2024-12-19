@@ -90,11 +90,7 @@ let calc1 dims bytes=
             arr[x, yborder] <- '#'
     for x, y in bytes do
         arr[x + 1, y + 1] <- '#'
-    // dumpArray true arr
     let graph = parseGraph (Point (1, 1)) (Point (xdim, ydim)) arr
-    // if bytes |> List.contains (6, 1) && not (bytes |> List.contains (1, 0)) then
-    //     let (g:Graph), (startPos:Position), (endPos:Position) = graph
-    //     for kv in g do printfn $"{kv.Key}: {kv.Value}"
     dijkstra graph
 
 let calc2 dims input =
@@ -147,10 +143,11 @@ let test =
 0,5
 1,6
 2,0
-"""  
+"""
     calc1 (7,7) ((parse test0) |> List.take 12) |> should equal (Some 22)
     
     let input = readDailyInput day
+    calc1 (71,71) ((parse input) |> List.take 1024) |> should equal (Some 416)
 
     calc2 (7,7) (parse test0) |> should equal (6, 1)
     calc2 (71,71) (parse input) |> should equal (50, 23)

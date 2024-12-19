@@ -29,3 +29,6 @@ let split2space = split2 ' '
 
 let splitSpace (s:string) =
     s.Split (' ', StringSplitOptions.TrimEntries ||| StringSplitOptions.RemoveEmptyEntries) |> List.ofArray
+
+let removeMany keys map =
+    keys |> Seq.fold (fun m c -> m |> Map.remove c) map
