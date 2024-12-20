@@ -34,7 +34,7 @@ let parse input =
 let findCheats cheatlength input =
     let maxx, maxy = maxes input 0
     let manDist p1 p2 = abs (fst p1 - fst p2) + abs (snd p1 - snd p2)
-    let cheatNeighbours =
+    let cheatVecs =
         List.allPairs [-cheatlength..cheatlength] [-cheatlength..cheatlength] |> List.filter (fun p -> let d = manDist (0, 0) p in 0 < d && d <= cheatlength)
     let cheats p1 =
         let startDist = input[fst p1, snd p1]
@@ -43,7 +43,7 @@ let findCheats cheatlength input =
         else
             let isInbounds (x, y) = 0 < x && x < maxx && 0 < y && y < maxy && input[x, y] <> -1
             let saving (x, y) = startDist - (input[x, y] + manDist p1 (x, y))
-            cheatNeighbours |> List.map (addvec p1) |> List.filter isInbounds |> List.map (fun p2 -> (p1, p2, saving p2)) |> List.filter (fun (_, _, saving) -> saving > 0)
+            cheatVecs |> List.map (addvec p1) |> List.filter isInbounds |> List.map (fun p2 -> (p1, p2, saving p2)) |> List.filter (fun (_, _, saving) -> saving > 0)
 
     [for x in 0..maxx do for y in 0..maxy do (x, y)] |> List.collect cheats
 
