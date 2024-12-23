@@ -8,7 +8,7 @@ let readDailyInput day =
     File.ReadAllText(path)
 
 let parseLines (inputText:string) =
-    inputText.Split(Environment.NewLine) |> List.ofArray |> List.filter (fun s -> not (String.IsNullOrEmpty s))
+    inputText.Split(Environment.NewLine) |> List.ofArray |> List.map (fun s -> s.Trim()) |> List.filter (fun s -> not (String.IsNullOrEmpty s))
 
 let parseBlocks (input:string) =
     let blocks = input.Split("\n\n") |> List.ofArray

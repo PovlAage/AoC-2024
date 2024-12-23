@@ -29,42 +29,6 @@ let listStateToArrayState (s:ListState) =
     String.Join("", ds) + string n
 
 let parse= parseLines
-let ACT = 'A'
-let numKeys = ([0..9] |> List.map string |> List.map (fun s -> s[0])) @ [ACT]
-let dirKeysAndVecs = ['^', (0, -1); 'v', (0, 1); '<', (-1, 0); '>', (1, 0); ACT, (0, 0)]
-let dirKeys = dirKeysAndVecs |> List.map fst
-let keyToVec = dirKeysAndVecs |> Map.ofSeq
-let numArrayStr = """
-789
-456
-123
-#0A
-"""
-let numArray = AdventArray.parseArray2D numArrayStr 1 '#'
-let mutable numPos = Map.empty
-numArray |> Array2D.iteri (fun x y c -> if c <> '#' then numPos <- numPos.Add((x, y), c))
-let numPosRev = numPos |> Map.toSeq |> Seq.map (fun x -> snd x, fst x) |> Map.ofSeq
-// for x in numPos do printfn $"{x}"
-
-let dirArrayStr = """
-#^A
-<v>
-"""
-let dirArray = AdventArray.parseArray2D dirArrayStr 1 '#'
-let mutable dirPos = Map.empty
-dirArray |> Array2D.iteri (fun x y c -> if c <> '#' then dirPos <- dirPos.Add((x, y), c))
-let dirPosRev = dirPos |> Map.toSeq |> Seq.map (fun x -> snd x, fst x) |> Map.ofSeq
-// for x in dirPos do printfn $"{x}"
-
-let tryMoveDirKey key dirKey =
-    let pos = dirPosRev[key]
-    let newPos = addvec pos keyToVec[dirKey]
-    if dirPos.ContainsKey(newPos) then Some dirPos[newPos] else None
-
-let tryMoveNumKey key dirKey =
-    let pos = numPosRev[key]
-    let newPos = addvec pos keyToVec[dirKey]
-    if numPos.ContainsKey(newPos) then Some numPos[newPos] else None
 
 let buildGraph (upperDists:Map<char*char, int64>) (lowerStates:char list) (tryMove:char -> char -> char option)=
     let upperStates = upperDists.Keys |> Seq.map fst |> List.ofSeq
@@ -96,7 +60,40 @@ let dijkstra<'T when 'T : comparison> (graph:Graph<'T>) (startPos:'T) =
 
     dist
 
-let distMap k =
+let distMap depth =
+    let dirArrayStr = """
+    #^A
+    <v>
+    """
+    let dirArray = AdventArray.parseArray2D dirArrayStr 1 '#'
+    let mutable dirPos = Map.empty
+    dirArray |> Array2D.iteri (fun x y c -> if c <> '#' then dirPos <- dirPos.Add((x, y), c))
+    let dirPosRev = dirPos |> Map.toSeq |> Seq.map (fun x -> snd x, fst x) |> Map.ofSeq
+    let numArrayStr = """
+    789
+    456
+    123
+    #0A
+    """
+    let numArray = AdventArray.parseArray2D numArrayStr 1 '#'
+    let mutable numPos = Map.empty
+    numArray |> Array2D.iteri (fun x y c -> if c <> '#' then numPos <- numPos.Add((x, y), c))
+    let numPosRev = numPos |> Map.toSeq |> Seq.map (fun x -> snd x, fst x) |> Map.ofSeq
+    let ACT = 'A'
+    let numKeys = ([0..9] |> List.map string |> List.map (fun s -> s[0])) @ [ACT]
+    let dirKeysAndVecs = ['^', (0, -1); 'v', (0, 1); '<', (-1, 0); '>', (1, 0); ACT, (0, 0)]
+    let dirKeys = dirKeysAndVecs |> List.map fst
+    let keyToVec = dirKeysAndVecs |> Map.ofSeq
+    let tryMoveDirKey key dirKey =
+        let pos = dirPosRev[key]
+        let newPos = addvec pos keyToVec[dirKey]
+        if dirPos.ContainsKey(newPos) then Some dirPos[newPos] else None
+
+    let tryMoveNumKey key dirKey =
+        let pos = numPosRev[key]
+        let newPos = addvec pos keyToVec[dirKey]
+        if numPos.ContainsKey(newPos) then Some numPos[newPos] else None
+
     let distinctPairs l = List.allPairs l l |> List.filter (fun (x1, x2) -> x1 <> x2)
     let rec loop k dists =
         let lowerStates, tryMove = if k = 0 then numKeys, tryMoveNumKey else dirKeys, tryMoveDirKey
@@ -107,7 +104,7 @@ let distMap k =
         let nextDists = lowerStates |> List.collect nextDistsFrom |> Map.ofList
         if k = 0 then nextDists else loop (k - 1) nextDists
     let initialDists = distinctPairs dirKeys |> List.map (fun x -> (x, 0L)) |> Map.ofList
-    loop k initialDists
+    loop depth initialDists
   
 let shortest (dm:Map<char*char, int64>) s =
     ("A" + s).ToCharArray() |> List.ofArray |> List.pairwise |> List.sumBy (fun (n, m) -> dm[(n, m)] + 1L)
