@@ -2,6 +2,7 @@
 #r "nuget: FsUnit.xUnit, 6.0.1"
 #load "Utility.fs"
 #load "AdventArray.fs"
+#load "AdventGraph.fs"
 
 open System
 open System.Collections.Generic
@@ -10,7 +11,7 @@ open System.IO
 open System.Numerics
 open System.Text.RegularExpressions
 open AdventArray
-open FsUnit.CustomMatchers
+open AdventGraph
 open Microsoft.FSharp.Collections
 open Microsoft.FSharp.Core.Operators
 open Microsoft.FSharp.Quotations
@@ -21,9 +22,6 @@ type NumKeyPad = char
 type DirKeyPad = char
 type StateKey = string
 type ListState = DirKeyPad list * NumKeyPad
-type Neighbour<'T> = Neighbour of 'T * int64
-type Node<'T> = { State: 'T; Neighbours: Neighbour<'T> list}
-type Graph<'T when 'T : comparison> = Map<'T, Neighbour<'T> list> 
 let listStateToArrayState (s:ListState) =
     let ds, n = s
     String.Join("", ds) + string n
@@ -38,27 +36,6 @@ let buildGraph (upperDists:Map<char*char, int64>) (lowerStates:char list) (tryMo
         let lowerNeighbours = [tryMove lower upper] |> List.choose id |> List.map (fun l -> Neighbour ((upper, l), 1))
         lowerNeighbours @ List.ofSeq upperNeighbours
     states |> Seq.map (fun s -> s, getNeighbours s) |> Map.ofSeq
-
-let dijkstra<'T when 'T : comparison> (graph:Graph<'T>) (startPos:'T) =
-    // init
-    let vertices = graph |> Map.toList |> List.map fst
-    let mutable dist = vertices |> Seq.map (fun v -> v, Int64.MaxValue) |> Map.ofSeq
-    dist <- dist.Add(startPos, 0L)
-    let mutable prev = Map.empty            
-    let queue = PriorityQueue<'T, int64>()
-    queue.Enqueue(startPos, 0L)
-    
-    while queue.Count > 0 do
-        let u = queue.Dequeue()
-        let neighbours = graph |> Map.find u
-        for Neighbour (v, d) in neighbours do
-            let alt = dist[u] + d
-            if alt < dist[v] then
-                prev <- prev |> Map.add v [u]
-                dist <- dist |> Map.add v alt
-                queue.Enqueue(v, alt)
-
-    dist
 
 let distMap depth =
     let dirArrayStr = """
